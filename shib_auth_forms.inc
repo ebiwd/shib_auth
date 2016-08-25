@@ -47,6 +47,13 @@ function shib_auth_admin_general($form, &$form_state) {
     '#description'   => t('The text of the login link. You can change this text on the Shibbolet login block settings form too!'),
   );
 
+  $form['shib_handler_settings']['shib_auth_automatic_redirect'] = array(
+    '#type'          => 'checkbox',
+    '#title'         => t('Automatically send users to the login form'),
+    '#description'   => t('The user will be automatically sent to the login link after 3 seconds by JS.'),
+    '#default_value' => shib_auth_config('automatic_redirect'),
+  );
+
   $form['shib_handler_settings']['shib_auth_force_https'] = array(
     '#type'          => 'checkbox',
     '#title'         => t('Force HTTPS on login'),
@@ -94,10 +101,30 @@ function shib_auth_admin_general($form, &$form_state) {
     '#description'   => t('The text of the link providing account linking shown on the user settings form.'),
   );
 
+  $form['shib_styles'] = array(
+    '#type'          => 'fieldset',
+    '#title'         => 'Style options',
+    '#weight'        => -1,
+  );
+
+  $form['shib_styles']['shib_auth_div_class'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Container classes'),
+    '#default_value' => shib_auth_config('div_class'),
+    '#description'   => t('Classes to add to the container div. Seperate classes with spaces, do not add periods.'),
+  );
+
+  $form['shib_styles']['shib_auth_link_class'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Link classes'),
+    '#default_value' => shib_auth_config('link_class'),
+    '#description'   => t('Classes to add to the link. Seperate classes with spaces, do not add periods.'),
+  );
+
   $form['shib_attribute_debug'] = array(
     '#type'          => 'fieldset',
     '#title'         => 'Debugging options',
-    '#weight'        => -1,
+    '#weight'        => -2,
   );
 
   $form['shib_attribute_debug']['shib_auth_debug_state'] = array(

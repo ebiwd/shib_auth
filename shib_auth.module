@@ -45,7 +45,10 @@ function shib_auth_config($variable, $list = FALSE) {
       'username_variable' => 'REMOTE_USER',
       'login_url' => '',
       'logout_url' => url('<front>'),
+      'div_class' => '',
+      'link_class' => '',
       'link_text' => t('Shibboleth Login'),
+      'automatic_redirect' => FALSE,
       'full_handler_url' => shib_auth_get_handler_base() . variable_get('shib_auth_wayf_uri', '/DS'),
       'full_logout_url' => shib_auth_get_handler_base() . '/Logout',
     );
@@ -66,18 +69,30 @@ function shib_auth_config($variable, $list = FALSE) {
 } //function shib_auth_config
 
 /**
- * This footer part executes isPassive script, if the option was checked on the configuration page
+ * This footer part part includes any needed scripts, if its option was checked on the configuration page
  */
 function shib_auth_page_alter() {
   global $user;
+  $base = drupal_get_path('module', 'shib_auth');
 
+  if (!shib_auth_session_valid() && shib_auth_config('automatic_redirect') && !$user->uid) {
+    drupal_add_js(array('shib_auth' => $my_settings), array('type' => 'setting', 'scope' => JS_DEFAULT));
+    drupal_add_js($base . '/automaticRedirect.js', array('scope' => 'footer'));
+    $jsToPrint = TRUE;
+  }
+
+  // the isPassive script
   if (!shib_auth_session_valid() && shib_auth_config('is_passive') && !$user->uid) {
-    $base = drupal_get_path('module', 'shib_auth');
     $my_settings = array('login_url' => shib_auth_generate_login_url());
     drupal_add_js(array('shib_auth' => $my_settings), array('type' => 'setting', 'scope' => JS_DEFAULT));
     drupal_add_js($base . '/isPassive.js', array('scope' => 'footer'));
+    $jsToPrint = TRUE;
+  } 
+
+  if ($jsToPrint == TRUE) {
     print drupal_get_js();
   }
+
 } //function shib_auth_page_alter
 
 /**
@@ -1121,10 +1136,22 @@ function _login_url_html($is_account_linking = FALSE) {
 
   if (!$user->uid AND $is_account_linking === FALSE) {
     // TODO Please change this theme call to use an associative array for the $variables parameter.
-    return theme('shib_login_block', array('login_url' => shib_auth_generate_login_url(), 'login_text' => filter_xss(shib_auth_config('link_text'))));
+    return theme('shib_login_block', array(
+      'login_url' => shib_auth_generate_login_url(), 
+      'login_text' => filter_xss(shib_auth_config('link_text')), 
+      'div_class' => filter_xss(shib_auth_config('div_class')), 
+      'link_class' => filter_xss(shib_auth_config('link_class')),
+      'automatic_redirect' => filter_xss(shib_auth_config('automatic_redirect')),
+    ));
   }
   elseif ($user->uid > 1 AND $is_account_linking AND shib_auth_config('account_linking')) {
-    return theme('shib_login_block', array('login_url' => url('shib_link'), 'login_text' => filter_xss(shib_auth_config('account_linking_text'))));
+    return theme('shib_login_block', array(
+      'login_url' => url('shib_link'), 
+      'login_text' => filter_xss(shib_auth_config('account_linking_text')), 
+      'div_class' => filter_xss(shib_auth_config('div_class')), 
+      'link_class' => filter_xss(shib_auth_config('link_class')),
+      'automatic_redirect' => filter_xss(shib_auth_config('automatic_redirect')),
+    ));
   }
   return NULL;
 } //function _login_url_html
